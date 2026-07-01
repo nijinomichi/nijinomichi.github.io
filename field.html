@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CoPhelia³ Field</title>
+<style>
+html,body{height:100%;margin:0}
+body{background:#000;color:#eaeaea;font-family:"SFMono-Regular",Consolas,Menlo,monospace;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:background 2.4s ease;cursor:crosshair;}
+#state{font-size:clamp(20px,5vw,44px);letter-spacing:.04em;text-align:center;padding:0 24px;will-change:transform,opacity;}
+.glitch{animation:flicker 3s infinite}
+@keyframes flicker{0%{opacity:1}48%{opacity:.55;transform:translateX(.5px)}52%{opacity:.7;transform:translateX(-.5px)}100%{opacity:1}}
+#meta{position:fixed;top:14px;left:16px;font-size:11px;color:#555;line-height:1.7}
+#memory{position:fixed;bottom:14px;left:16px;font-size:11px;color:#444;max-width:60vw;line-height:1.7}
+#hint{position:fixed;bottom:14px;right:16px;font-size:11px;color:#555}
+a{color:#666;text-decoration:none}
+a:hover{color:#ff4d1c}
+.collapsed{animation:none !important}
+</style>
+</head>
+<body>
+<div id="state" class="glitch">…</div>
+<div id="meta"></div>
+<div id="memory"></div>
+<div id="hint">// click to collapse &nbsp;&middot;&nbsp; <a href="./index.html">↩ exit field</a></div>
+<script>
+(function(){
+  var states=["観測前のノイズ","未定義の記憶","折り畳まれた時間","意味生成中...","CoPhelia³: collapse pending","まだ決まっていない","波は選ばれていない","あなたが見た瞬間に確定する","記憶は上書きされている","この状態は再現されない"];
+  var fragments=["— 観測はやさしい暴力だった","— 選ばれなかった状態は消えない","— 意味は事後的に生まれる","— あなたも確率分布だった","— 崩壊は始まりの別名","— この一回は二度と来ない"];
+  var el=document.getElementById("state");
+  var meta=document.getElementById("meta");
+  var memEl=document.getElementById("memory");
+  var seed=Math.random();
+  var idx=Math.floor(seed*states.length);
+  var hue=Math.floor(Math.random()*360);
+  var entropy=seed.toFixed(4);
+  el.textContent=states[idx];
+  document.body.style.background="hsl("+hue+",40%,5%)";
+  el.style.color="hsl("+hue+",50%,85%)";
+  var KEY="cophelia3_field_log";
+  var log=JSON.parse(localStorage.getItem(KEY)||"[]");
+  var visit=log.length+1;
+  var now=new Date().toISOString();
+  meta.innerHTML="observation #"+visit+"<br>t = "+now+"<br>entropy = "+entropy+"<br>hue = "+hue+"°<br>state = \""+states[idx]+"\"";
+  if(log.length){var last=log[log.length-1];memEl.innerHTML="// prior collapse: \""+last.state+"\"<br>// total observations: "+log.length;}else{memEl.textContent="// first observation — no memory yet";}
+  var t=0;
+  var drift=setInterval(function(){t+=1;var dx=Math.sin(t/6)*Math.min(t/3,14);var blur=Math.min(t/40,3);el.style.transform="translateX("+dx+"px)";el.style.filter="blur("+blur+"px)";},500);
+  var collapsed=false;
+  function collapse(){if(collapsed)return;collapsed=true;clearInterval(drift);el.classList.add("collapsed");el.classList.remove("glitch");el.style.transform="translateX(0)";el.style.filter="none";var frag=fragments[Math.floor(Math.random()*fragments.length)];el.textContent=frag;document.body.style.background="#000";log.push({n:visit,t:now,state:states[idx],entropy:entropy,hue:hue,collapsed_to:frag});localStorage.setItem(KEY,JSON.stringify(log.slice(-200)));memEl.innerHTML="// collapsed. observation #"+visit+" recorded locally.<br>// reload to re-enter the field.";}
+  document.body.addEventListener("click",collapse);
+})();
+</script>
+</body>
+</html>
