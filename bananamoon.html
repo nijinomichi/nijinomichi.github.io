@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BananaMoon °Banaち — nijinomichi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#05060a;color:#e8e8e8;font-family:"SFMono-Regular",Consolas,Menlo,monospace;cursor:crosshair}
+canvas{display:block;position:fixed;inset:0}
+.hud{position:fixed;left:20px;top:18px;font-size:12px;color:#8a8a8a;letter-spacing:.06em;z-index:3;line-height:1.9}
+.hud b{color:#ffcb3d;font-weight:400}
+.haiku{position:fixed;left:50%;bottom:52px;transform:translateX(-50%);text-align:center;font-size:14px;color:#cfcfcf;letter-spacing:.12em;z-index:3;white-space:pre-line;text-shadow:0 0 18px rgba(255,203,61,.25);transition:opacity 1.2s}
+.back{position:fixed;right:20px;top:18px;font-size:12px;color:#8a8a8a;text-decoration:none;z-index:4;border:1px solid #22242c;padding:5px 10px;border-radius:6px}
+.back:hover{color:#ffcb3d;border-color:#ffcb3d}
+.hint{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#3a3d46;font-size:12px;letter-spacing:.2em;z-index:2;pointer-events:none;transition:opacity 1s}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud"><b>&#10095; bananamoon</b><br>observation seeds the moon<br>move &middot; click to bloom</div>
+<a class="back" href="./#work">&larr; back to work</a>
+<div class="hint">MOVE THE CURSOR</div>
+<div class="haiku" id="haiku"></div>
+<script>
+var cv=document.getElementById('c'),ctx=cv.getContext('2d'),W,H;
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+rs();addEventListener('resize',rs);
+var mx=W/2,my=H/2,tmx=mx,tmy=my,obs=0,t=0;
+var stars=[];for(var i=0;i<220;i++){stars.push({x:Math.random()*W,y:Math.random()*H,z:Math.random(),tw:Math.random()*6.28});}
+var blooms=[];
+var haikus=[["still water","a banana moon","forgets its shape"],["you looked","and the field","began to drift"],["one cursor","seeds the dark","with yellow"],["no observer","no moon —","only waiting"],["entropy hums","the peel of light","unfolds slow"]];
+var hEl=document.getElementById('haiku'),hint=document.querySelector('.hint');
+function setHaiku(){var h=haikus[Math.floor(Math.random()*haikus.length)];hEl.style.opacity=0;setTimeout(function(){hEl.textContent=h.join('\n');hEl.style.opacity=1;},600);}
+setHaiku();setInterval(setHaiku,9000);
+addEventListener('mousemove',function(e){tmx=e.clientX;tmy=e.clientY;obs=Math.min(1,obs+0.02);if(hint)hint.style.opacity=0;});
+addEventListener('click',function(e){for(var i=0;i<24;i++){var a=Math.random()*6.28,s=1+Math.random()*4;blooms.push({x:e.clientX,y:e.clientY,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,hue:45+Math.random()*15});}});
+addEventListener('touchmove',function(e){var p=e.touches[0];tmx=p.clientX;tmy=p.clientY;obs=Math.min(1,obs+0.02);if(hint)hint.style.opacity=0;},{passive:true});
+function loop(){t+=0.01;mx+=(tmx-mx)*0.06;my+=(tmy-my)*0.06;
+ctx.fillStyle='rgba(5,6,10,0.28)';ctx.fillRect(0,0,W,H);
+for(var i=0;i<stars.length;i++){var s=stars[i];var b=0.4+0.6*Math.abs(Math.sin(t*2+s.tw));ctx.globalAlpha=b*(0.3+s.z*0.7);ctx.fillStyle='#cfd2dc';ctx.fillRect(s.x,s.y,s.z*1.6,s.z*1.6);}
+ctx.globalAlpha=1;
+var R=60+obs*90+Math.sin(t)*6;
+var g=ctx.createRadialGradient(mx,my,R*0.2,mx,my,R*2.4);
+g.addColorStop(0,'rgba(255,214,90,'+(0.28+obs*0.4)+')');g.addColorStop(0.5,'rgba(255,180,40,0.10)');g.addColorStop(1,'rgba(255,180,40,0)');
+ctx.fillStyle=g;ctx.beginPath();ctx.arc(mx,my,R*2.4,0,6.2832);ctx.fill();
+var mg=ctx.createRadialGradient(mx-R*0.3,my-R*0.3,R*0.1,mx,my,R);
+mg.addColorStop(0,'#fff3c4');mg.addColorStop(0.6,'#ffcb3d');mg.addColorStop(1,'#c8860f');
+ctx.fillStyle=mg;ctx.beginPath();ctx.arc(mx,my,R,0,6.2832);ctx.fill();
+ctx.strokeStyle='rgba(200,134,15,0.5)';ctx.lineWidth=1;
+for(var k=0;k<5;k++){ctx.globalAlpha=0.25;ctx.beginPath();ctx.arc(mx+Math.cos(t+k)*R*0.5,my+Math.sin(t*1.3+k)*R*0.4,R*(0.18+k*0.04),0,6.2832);ctx.stroke();}
+ctx.globalAlpha=1;
+for(var j=blooms.length-1;j>=0;j--){var b=blooms[j];b.x+=b.vx;b.y+=b.vy;b.vy+=0.03;b.life-=0.012;if(b.life<=0){blooms.splice(j,1);continue;}ctx.globalAlpha=b.life;ctx.fillStyle='hsl('+b.hue+',90%,60%)';ctx.beginPath();ctx.arc(b.x,b.y,2.2*b.life+0.5,0,6.2832);ctx.fill();}
+ctx.globalAlpha=1;
+requestAnimationFrame(loop);}
+loop();
+</script>
+</body>
+</html>
+
